@@ -1,6 +1,9 @@
 ## adevens ltree implementation
 
 This is adevens patched version of postgres ltree.
+
+Original written by Teodor Sigaev (teodor@sigaev.ru) and Oleg Bartunov (oleg@sai.msu.su)
+
 It's different in using `::` instead of `.` as label separator.
 And it allows to have special characters like `{ } ! *` in ltree labels.
 You can match those label in ltree queries by escaping these characters:
