@@ -8,3 +8,7 @@ You can match those label in ltree queries by escaping these characters:
 ```SQL
 SELECT '!foo::{bar}::baz%'::ltree ~ '\!foo::\{bar\}::baz\%';
 ```
+
+### Unsupported features
+
+* Full-text queries a.k.a. ltxtquery currently does not support usage of escaped characters.
