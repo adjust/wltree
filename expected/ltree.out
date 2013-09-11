@@ -47,6 +47,12 @@ SELECT '1::2::3 : 4'::ltree;
  1::2::3 : 4
 (1 row)
 
+SELECT 'foö::bär::ba@ : 4*'::ltree;
+       ltree        
+--------------------
+ foö::bär::ba@ : 4*
+(1 row)
+
 SELECT ltree2text('1::2::3::34::sdf');
     ltree2text    
 ------------------

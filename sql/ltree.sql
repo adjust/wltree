@@ -8,6 +8,7 @@ SELECT '1:1::2'::ltree;
 SELECT '1::2'::ltree;
 SELECT '1::2::_3'::ltree;
 SELECT '1::2::3 : 4'::ltree;
+SELECT 'foö::bär::ba@ : 4*'::ltree;
 
 SELECT ltree2text('1::2::3::34::sdf');
 SELECT text2ltree('1::2::3::34::sdf');
