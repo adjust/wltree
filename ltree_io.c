@@ -25,8 +25,8 @@ Datum		lquery_out(PG_FUNCTION_ARGS);
 
 #define UNCHAR ereport(ERROR, \
 					   (errcode(ERRCODE_SYNTAX_ERROR), \
-						errmsg("syntax error at position %d: '%c' (%u)", \
-						pos, TOUCHAR(ptr), TOUCHAR(ptr))));
+						errmsg("syntax error at position %d: '%c'", \
+						pos, TOUCHAR(ptr))));
 
 
 typedef struct
