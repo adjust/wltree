@@ -25,8 +25,8 @@ Datum		lquery_out(PG_FUNCTION_ARGS);
 
 #define UNCHAR ereport(ERROR, \
 					   (errcode(ERRCODE_SYNTAX_ERROR), \
-						errmsg("syntax error at position %d", \
-						pos)));
+						errmsg("syntax error at position %d: '%c' (%u)", \
+						pos, TOUCHAR(ptr), TOUCHAR(ptr))));
 
 
 typedef struct
@@ -93,14 +93,9 @@ ltree_in(PG_FUNCTION_ARGS)
 
 		if (state == LTPRS_WAITNAME)
 		{
-			if (ISALLOWEDCHAR(ptr))
-			{
-				lptr->start = ptr;
-				lptr->wlen = 0;
-				state = LTPRS_WAITDELIM;
-			}
-			else
-				UNCHAR;
+			lptr->start = ptr;
+			lptr->wlen = 0;
+			state = LTPRS_WAITDELIM;
 		}
 		else if (state == LTPRS_WAITDELIMEND) {
 			if (charlen == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR))
@@ -119,17 +114,13 @@ ltree_in(PG_FUNCTION_ARGS)
 				lptr++;
 				state = LTPRS_WAITNAME;
 			}
-			else if (ISALLOWEDCHAR(ptr))
-				state = LTPRS_WAITDELIM;
 			else
-				UNCHAR;
+				state = LTPRS_WAITDELIM;
 		}
 		else if (state == LTPRS_WAITDELIM)
 		{
 			if (charlen == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR))
 				state = LTPRS_WAITDELIMEND;
-			else if (!ISALLOWEDCHAR(ptr))
-				UNCHAR;
 		}
 		else
 			/* internal error */
@@ -303,7 +294,7 @@ lquery_in(PG_FUNCTION_ARGS)
 			}
 			else if (! escaped_char && charlen == 1 && t_iseq(ptr, '*'))
 				state = LQPRS_WAITOPEN;
-			else if (ISALLOWEDCHAR(ptr))
+			else
 			{
 				GETVAR(curqlevel) = lptr = (nodeitem *) palloc0(sizeof(nodeitem) * (numOR + 1));
 				lptr->start = ptr;
@@ -312,20 +303,13 @@ lquery_in(PG_FUNCTION_ARGS)
 				curqlevel->numvar = 1;
 				escaped_char = (charlen == 1 && t_iseq(ptr, ESCAPE_CHAR)) && ! escaped_char;
 			}
-			else
-				UNCHAR;
 		}
 		else if (state == LQPRS_WAITVAR)
 		{
-			if (ISALLOWEDCHAR(ptr))
-			{
-				lptr++;
-				lptr->start = ptr;
-				state = LQPRS_WAITDELIM;
-				curqlevel->numvar++;
-			}
-			else
-				UNCHAR;
+			lptr++;
+			lptr->start = ptr;
+			state = LQPRS_WAITDELIM;
+			curqlevel->numvar++;
 		}
 		else if (state == LQPRS_WAITDELIM)
 		{
@@ -372,14 +356,12 @@ lquery_in(PG_FUNCTION_ARGS)
 					UNCHAR;
 				state = LQPRS_WAITDELIMEND;
 			}
-			else if (ISALLOWEDCHAR(ptr))
+			else
 			{
 				escaped_char = (charlen == 1 && t_iseq(ptr, ESCAPE_CHAR)) && ! escaped_char;
 				if (lptr->flag)
 					UNCHAR;
 			}
-			else
-				UNCHAR;
 		}
 		else if (state == LQPRS_WAITDELIMEND) {
 			if (charlen == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR))

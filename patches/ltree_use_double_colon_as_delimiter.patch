@@ -4019,10 +4019,10 @@ index 246443e..0cc8450 100644
 +14::5::13::19::25::12::32::9::13::16::12
 +5::24::24::9::32::26::31
 diff --git a/contrib/ltree/expected/ltree.out b/contrib/ltree/expected/ltree.out
-index da6e39a..2862b40 100644
+index da6e39a..d1bc960 100644
 --- a/contrib/ltree/expected/ltree.out
 +++ b/contrib/ltree/expected/ltree.out
-@@ -11,277 +11,301 @@ SELECT '1'::ltree;
+@@ -11,277 +11,307 @@ SELECT '1'::ltree;
   1
  (1 row)
  
@@ -4046,47 +4046,53 @@ index da6e39a..2862b40 100644
  --------
 - 1.2._3
 + 1:1::2
-+(1 row)
-+
-+SELECT '1::2'::ltree;
-+ ltree 
-+-------
-+ 1::2
-+(1 row)
-+
-+SELECT '1::2::_3'::ltree;
-+  ltree   
-+----------
-+ 1::2::_3
-+(1 row)
-+
-+SELECT '1::2::3 : 4'::ltree;
-+    ltree    
-+-------------
-+ 1::2::3 : 4
  (1 row)
  
 -SELECT ltree2text('1.2.3.34.sdf');
 -  ltree2text  
 ---------------
 - 1.2.3.34.sdf
-+SELECT ltree2text('1::2::3::34::sdf');
-+    ltree2text    
-+------------------
-+ 1::2::3::34::sdf
++SELECT '1::2'::ltree;
++ ltree 
++-------
++ 1::2
  (1 row)
  
 -SELECT text2ltree('1.2.3.34.sdf');
 -  text2ltree  
 ---------------
 - 1.2.3.34.sdf
++SELECT '1::2::_3'::ltree;
++  ltree   
++----------
++ 1::2::_3
+ (1 row)
+ 
+-SELECT subltree('Top.Child1.Child2',1,2);
++SELECT '1::2::3 : 4'::ltree;
++    ltree    
++-------------
++ 1::2::3 : 4
++(1 row)
++
++SELECT 'foö::bär::ba@ : 4*'::ltree;
++       ltree        
++--------------------
++ foö::bär::ba@ : 4*
++(1 row)
++
++SELECT ltree2text('1::2::3::34::sdf');
++    ltree2text    
++------------------
++ 1::2::3::34::sdf
++(1 row)
++
 +SELECT text2ltree('1::2::3::34::sdf');
 +    text2ltree    
 +------------------
 + 1::2::3::34::sdf
- (1 row)
- 
--SELECT subltree('Top.Child1.Child2',1,2);
++(1 row)
++
 +SELECT subltree('Top::Child1::Child2',1,2);
   subltree 
  ----------
@@ -4414,7 +4420,7 @@ index da6e39a..2862b40 100644
   lca 
  -----
   
-@@ -299,589 +323,643 @@ SELECT '4|3|2'::lquery;
+@@ -299,589 +329,649 @@ SELECT '4|3|2'::lquery;
   4|3|2
  (1 row)
  
@@ -4480,15 +4486,15 @@ index da6e39a..2862b40 100644
  --------
 - 1.*
 + 1::*
-+(1 row)
-+
+ (1 row)
+ 
+-SELECT '4|3|2.*'::lquery;
 +SELECT '4|3|2::*'::lquery;
 +  lquery  
 +----------
 + 4|3|2::*
- (1 row)
- 
--SELECT '4|3|2.*'::lquery;
++(1 row)
++
 +SELECT '1::2::*'::lquery;
   lquery  
  ---------
@@ -4655,6 +4661,12 @@ index da6e39a..2862b40 100644
  (1 row)
  
 -SELECT nlevel('1.2.3.4');
++SELECT 'foö::bär::ba\@ \: 4\*'::lquery;
++       lquery       
++--------------------
++ foö::bär::ba@ : 4*
++(1 row)
++
 +SELECT nlevel('1::2::3::4');
   nlevel 
  --------
@@ -4712,24 +4724,26 @@ index da6e39a..2862b40 100644
  
 -SELECT '1.2.3.4.5'::ltree @> '1.2.3.4'::ltree;
 +SELECT '1::2::3::4::5'::ltree @> '1::2::3::4'::ltree;
-+ ?column? 
-+----------
-+ f
-+(1 row)
-+
-+SELECT '1::3::3'::ltree @> '1::2::3::4'::ltree;
   ?column? 
  ----------
   f
  (1 row)
  
 -SELECT '1.3.3'::ltree @> '1.2.3.4'::ltree;
++SELECT '1::3::3'::ltree @> '1::2::3::4'::ltree;
+  ?column? 
+ ----------
+  f
+ (1 row)
+ 
+-SELECT 'a.b.c.d.e'::ltree ~ 'a.b.c.d.e';
 +SELECT ':{'::ltree @> ':{:::)'::ltree;
-+ ?column? 
-+----------
-+ t
-+(1 row)
-+
+  ?column? 
+ ----------
+  t
+ (1 row)
+ 
+-SELECT 'a.b.c.d.e'::ltree ~ 'A.b.c.d.e';
 +SELECT ':{:::)'::ltree @> ':{:::)'::ltree;
 + ?column? 
 +----------
@@ -4742,35 +4756,33 @@ index da6e39a..2862b40 100644
   f
  (1 row)
  
--SELECT 'a.b.c.d.e'::ltree ~ 'a.b.c.d.e';
+-SELECT 'a.b.c.d.e'::ltree ~ 'A@.b.c.d.e';
 +SELECT 'a::b::c::d::e'::ltree ~ 'a::b::c::d::e';
   ?column? 
  ----------
   t
  (1 row)
  
--SELECT 'a.b.c.d.e'::ltree ~ 'A.b.c.d.e';
+-SELECT 'aa.b.c.d.e'::ltree ~ 'A@.b.c.d.e';
 +SELECT 'a::b::c::d::e'::ltree ~ 'A::b::c::d::e';
   ?column? 
  ----------
   f
  (1 row)
  
--SELECT 'a.b.c.d.e'::ltree ~ 'A@.b.c.d.e';
-+SELECT 'a::b::c::d::e'::ltree ~ 'A@::b::c::d::e';
-  ?column? 
- ----------
-  t
- (1 row)
- 
--SELECT 'aa.b.c.d.e'::ltree ~ 'A@.b.c.d.e';
-+SELECT 'aa::b::c::d::e'::ltree ~ 'A@::b::c::d::e';
-  ?column? 
- ----------
-  f
- (1 row)
- 
 -SELECT 'aa.b.c.d.e'::ltree ~ 'A*.b.c.d.e';
++SELECT 'a::b::c::d::e'::ltree ~ 'A@::b::c::d::e';
++ ?column? 
++----------
++ t
++(1 row)
++
++SELECT 'aa::b::c::d::e'::ltree ~ 'A@::b::c::d::e';
++ ?column? 
++----------
++ f
++(1 row)
++
 +SELECT 'aa::b::c::d::e'::ltree ~ 'A*::b::c::d::e';
   ?column? 
  ----------
@@ -5209,7 +5221,7 @@ index da6e39a..2862b40 100644
   ?column? 
  ----------
   f
-@@ -905,6 +983,43 @@ SELECT 'QWER_GY'::ltree ~ 'q_t%@*';
+@@ -905,6 +995,43 @@ SELECT 'QWER_GY'::ltree ~ 'q_t%@*';
   f
  (1 row)
  
@@ -5253,7 +5265,7 @@ index da6e39a..2862b40 100644
  --ltxtquery
  SELECT '!tree & aWdf@*'::ltxtquery;
     ltxtquery    
-@@ -918,6638 +1033,6638 @@ SELECT 'tree & aw_qw%*'::ltxtquery;
+@@ -918,6638 +1045,6638 @@ SELECT 'tree & aw_qw%*'::ltxtquery;
   tree & aw_qw%*
  (1 row)
  
@@ -18253,7 +18265,7 @@ index da6e39a..2862b40 100644
   count 
  -------
      19
-@@ -7561,37 +7676,37 @@ SELECT count(*) FROM _ltreetest WHERE t @ '23 & 1' ;
+@@ -7561,37 +7688,37 @@ SELECT count(*) FROM _ltreetest WHERE t @ '23 & 1' ;
     147
  (1 row)
  
@@ -18297,7 +18309,7 @@ index da6e39a..2862b40 100644
   count 
  -------
      15
-@@ -7599,13 +7714,13 @@ SELECT count(*) FROM _ltreetest WHERE t ? '{23.*.1,23.*.2}' ;
+@@ -7599,13 +7726,13 @@ SELECT count(*) FROM _ltreetest WHERE t ? '{23.*.1,23.*.2}' ;
  
  create index _tstidx on _ltreetest using gist (t);
  set enable_seqscan=off;
@@ -18313,7 +18325,7 @@ index da6e39a..2862b40 100644
   count 
  -------
      19
-@@ -7617,37 +7732,37 @@ SELECT count(*) FROM _ltreetest WHERE t @ '23 & 1' ;
+@@ -7617,37 +7744,37 @@ SELECT count(*) FROM _ltreetest WHERE t @ '23 & 1' ;
     147
  (1 row)
  
@@ -18358,7 +18370,7 @@ index da6e39a..2862b40 100644
  -------
      15
 diff --git a/contrib/ltree/ltree.h b/contrib/ltree/ltree.h
-index aec4458..f32bb3b 100644
+index aec4458..cd528dd 100644
 --- a/contrib/ltree/ltree.h
 +++ b/contrib/ltree/ltree.h
 @@ -6,6 +6,9 @@
@@ -18371,16 +18383,8 @@ index aec4458..f32bb3b 100644
  typedef struct
  {
  	uint16		len;
-@@ -80,6 +83,7 @@ typedef struct
- #define LQUERY_HASNOT		0x01
- 
- #define ISALNUM(x)	( t_isalpha(x) || t_isdigit(x)	|| ( pg_mblen(x) == 1 && t_iseq((x), '_') ) )
-+#define ISALLOWEDCHAR(x)	t_isprint(x)
- 
- /* full text query */
- 
 diff --git a/contrib/ltree/ltree_io.c b/contrib/ltree/ltree_io.c
-index 3e88b81..589fe2d 100644
+index 3e88b81..51cd263 100644
 --- a/contrib/ltree/ltree_io.c
 +++ b/contrib/ltree/ltree_io.c
 @@ -35,10 +35,12 @@ typedef struct
@@ -18405,7 +18409,7 @@ index 3e88b81..589fe2d 100644
  	ltree	   *result;
  	ltree_level *curlevel;
  	int			charlen;
-@@ -59,20 +61,39 @@ ltree_in(PG_FUNCTION_ARGS)
+@@ -59,33 +61,47 @@ ltree_in(PG_FUNCTION_ARGS)
  	while (*ptr)
  	{
  		charlen = pg_mblen(ptr);
@@ -18445,13 +18449,16 @@ index 3e88b81..589fe2d 100644
  		if (state == LTPRS_WAITNAME)
  		{
 -			if (ISALNUM(ptr))
-+			if (ISALLOWEDCHAR(ptr))
- 			{
- 				lptr->start = ptr;
- 				lptr->wlen = 0;
-@@ -81,11 +102,11 @@ ltree_in(PG_FUNCTION_ARGS)
- 			else
- 				UNCHAR;
+-			{
+-				lptr->start = ptr;
+-				lptr->wlen = 0;
+-				state = LTPRS_WAITDELIM;
+-			}
+-			else
+-				UNCHAR;
++			lptr->start = ptr;
++			lptr->wlen = 0;
++			state = LTPRS_WAITDELIM;
  		}
 -		else if (state == LTPRS_WAITDELIM)
 -		{
@@ -18465,25 +18472,23 @@ index 3e88b81..589fe2d 100644
  				if (lptr->wlen > 255)
  					ereport(ERROR,
  							(errcode(ERRCODE_NAME_TOO_LONG),
-@@ -98,7 +119,16 @@ ltree_in(PG_FUNCTION_ARGS)
+@@ -98,8 +114,13 @@ ltree_in(PG_FUNCTION_ARGS)
  				lptr++;
  				state = LTPRS_WAITNAME;
  			}
 -			else if (!ISALNUM(ptr))
-+			else if (ISALLOWEDCHAR(ptr))
-+				state = LTPRS_WAITDELIM;
+-				UNCHAR;
 +			else
-+				UNCHAR;
++				state = LTPRS_WAITDELIM;
 +		}
 +		else if (state == LTPRS_WAITDELIM)
 +		{
 +			if (charlen == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR))
 +				state = LTPRS_WAITDELIMEND;
-+			else if (!ISALLOWEDCHAR(ptr))
- 				UNCHAR;
  		}
  		else
-@@ -110,7 +140,7 @@ ltree_in(PG_FUNCTION_ARGS)
+ 			/* internal error */
+@@ -110,7 +131,7 @@ ltree_in(PG_FUNCTION_ARGS)
  		pos++;
  	}
  
@@ -18492,7 +18497,7 @@ index 3e88b81..589fe2d 100644
  	{
  		lptr->len = ptr - lptr->start;
  		if (lptr->wlen > 255)
-@@ -162,7 +192,9 @@ ltree_out(PG_FUNCTION_ARGS)
+@@ -162,7 +183,9 @@ ltree_out(PG_FUNCTION_ARGS)
  	{
  		if (i != 0)
  		{
@@ -18503,7 +18508,7 @@ index 3e88b81..589fe2d 100644
  			ptr++;
  		}
  		memcpy(ptr, curlevel->name, curlevel->len);
-@@ -185,6 +217,7 @@ ltree_out(PG_FUNCTION_ARGS)
+@@ -185,6 +208,7 @@ ltree_out(PG_FUNCTION_ARGS)
  #define LQPRS_WAITCLOSE 6
  #define LQPRS_WAITEND	7
  #define LQPRS_WAITVAR	8
@@ -18511,7 +18516,7 @@ index 3e88b81..589fe2d 100644
  
  
  #define GETVAR(x) ( *((nodeitem**)LQL_FIRST(x)) )
-@@ -208,6 +241,7 @@ lquery_in(PG_FUNCTION_ARGS)
+@@ -208,6 +232,7 @@ lquery_in(PG_FUNCTION_ARGS)
  	lquery_variant *lrptr = NULL;
  	bool		hasnot = false;
  	bool		wasbad = false;
@@ -18519,7 +18524,7 @@ index 3e88b81..589fe2d 100644
  	int			charlen;
  	int			pos = 0;
  
-@@ -218,48 +252,72 @@ lquery_in(PG_FUNCTION_ARGS)
+@@ -218,81 +243,98 @@ lquery_in(PG_FUNCTION_ARGS)
  
  		if (charlen == 1)
  		{
@@ -18567,45 +18572,51 @@ index 3e88b81..589fe2d 100644
  		if (state == LQPRS_WAITLEVEL)
  		{
 -			if (ISALNUM(ptr))
+-			{
+-				GETVAR(curqlevel) = lptr = (nodeitem *) palloc0(sizeof(nodeitem) * (numOR + 1));
+-				lptr->start = ptr;
+-				state = LQPRS_WAITDELIM;
+-				curqlevel->numvar = 1;
+-			}
+-			else if (charlen == 1 && t_iseq(ptr, '!'))
 +			if (! escaped_char && charlen == 1 && t_iseq(ptr, '!'))
  			{
  				GETVAR(curqlevel) = lptr = (nodeitem *) palloc0(sizeof(nodeitem) * (numOR + 1));
--				lptr->start = ptr;
-+				lptr->start = ptr + 1;
+ 				lptr->start = ptr + 1;
 +				lptr->escnum = 0;
  				state = LQPRS_WAITDELIM;
  				curqlevel->numvar = 1;
-+				curqlevel->flag |= LQL_NOT;
-+				hasnot = true;
- 			}
--			else if (charlen == 1 && t_iseq(ptr, '!'))
-+			else if (! escaped_char && charlen == 1 && t_iseq(ptr, '*'))
-+				state = LQPRS_WAITOPEN;
-+			else if (ISALLOWEDCHAR(ptr))
- 			{
- 				GETVAR(curqlevel) = lptr = (nodeitem *) palloc0(sizeof(nodeitem) * (numOR + 1));
--				lptr->start = ptr + 1;
-+				lptr->start = ptr;
-+				lptr->escnum = 0;
- 				state = LQPRS_WAITDELIM;
- 				curqlevel->numvar = 1;
--				curqlevel->flag |= LQL_NOT;
--				hasnot = true;
-+				escaped_char = (charlen == 1 && t_iseq(ptr, ESCAPE_CHAR)) && ! escaped_char;
+ 				curqlevel->flag |= LQL_NOT;
+ 				hasnot = true;
  			}
 -			else if (charlen == 1 && t_iseq(ptr, '*'))
--				state = LQPRS_WAITOPEN;
++			else if (! escaped_char && charlen == 1 && t_iseq(ptr, '*'))
+ 				state = LQPRS_WAITOPEN;
  			else
- 				UNCHAR;
- 		}
- 		else if (state == LQPRS_WAITVAR)
- 		{
+-				UNCHAR;
+-		}
+-		else if (state == LQPRS_WAITVAR)
+-		{
 -			if (ISALNUM(ptr))
-+			if (ISALLOWEDCHAR(ptr))
  			{
- 				lptr++;
+-				lptr++;
++				GETVAR(curqlevel) = lptr = (nodeitem *) palloc0(sizeof(nodeitem) * (numOR + 1));
  				lptr->start = ptr;
-@@ -271,28 +329,28 @@ lquery_in(PG_FUNCTION_ARGS)
++				lptr->escnum = 0;
+ 				state = LQPRS_WAITDELIM;
+-				curqlevel->numvar++;
++				curqlevel->numvar = 1;
++				escaped_char = (charlen == 1 && t_iseq(ptr, ESCAPE_CHAR)) && ! escaped_char;
+ 			}
+-			else
+-				UNCHAR;
++		}
++		else if (state == LQPRS_WAITVAR)
++		{
++			lptr++;
++			lptr->start = ptr;
++			state = LQPRS_WAITDELIM;
++			curqlevel->numvar++;
  		}
  		else if (state == LQPRS_WAITDELIM)
  		{
@@ -18638,7 +18649,7 @@ index 3e88b81..589fe2d 100644
  			{
  				lptr->len = ptr - lptr->start -
  					((lptr->flag & LVAR_SUBLEXEME) ? 1 : 0) -
-@@ -308,41 +366,56 @@ lquery_in(PG_FUNCTION_ARGS)
+@@ -308,28 +350,41 @@ lquery_in(PG_FUNCTION_ARGS)
  
  				state = LQPRS_WAITVAR;
  			}
@@ -18664,15 +18675,13 @@ index 3e88b81..589fe2d 100644
 +				state = LQPRS_WAITDELIMEND;
  			}
 -			else if (ISALNUM(ptr))
-+			else if (ISALLOWEDCHAR(ptr))
++			else
  			{
 +				escaped_char = (charlen == 1 && t_iseq(ptr, ESCAPE_CHAR)) && ! escaped_char;
  				if (lptr->flag)
  					UNCHAR;
  			}
- 			else
- 				UNCHAR;
- 		}
++		}
 +		else if (state == LQPRS_WAITDELIMEND) {
 +			if (charlen == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR))
 +			{
@@ -18695,10 +18704,10 @@ index 3e88b81..589fe2d 100644
 +				state = LQPRS_WAITLEVEL;
 +				curqlevel = NEXTLEV(curqlevel);
 +			}
-+			else
-+				UNCHAR;
-+		}
- 		else if (state == LQPRS_WAITOPEN)
+ 			else
+ 				UNCHAR;
+ 		}
+@@ -337,12 +392,12 @@ lquery_in(PG_FUNCTION_ARGS)
  		{
  			if (charlen == 1 && t_iseq(ptr, '{'))
  				state = LQPRS_WAITFNUM;
@@ -18714,7 +18723,7 @@ index 3e88b81..589fe2d 100644
  			}
  			else
  				UNCHAR;
-@@ -395,10 +468,10 @@ lquery_in(PG_FUNCTION_ARGS)
+@@ -395,10 +450,10 @@ lquery_in(PG_FUNCTION_ARGS)
  		}
  		else if (state == LQPRS_WAITEND)
  		{
@@ -18728,7 +18737,7 @@ index 3e88b81..589fe2d 100644
  			}
  			else
  				UNCHAR;
-@@ -410,10 +483,12 @@ lquery_in(PG_FUNCTION_ARGS)
+@@ -410,10 +465,12 @@ lquery_in(PG_FUNCTION_ARGS)
  		ptr += charlen;
  		if (state == LQPRS_WAITDELIM)
  			lptr->wlen++;
@@ -18742,7 +18751,7 @@ index 3e88b81..589fe2d 100644
  	{
  		if (lptr->start == ptr)
  			ereport(ERROR,
-@@ -457,7 +532,7 @@ lquery_in(PG_FUNCTION_ARGS)
+@@ -457,7 +514,7 @@ lquery_in(PG_FUNCTION_ARGS)
  			lptr = GETVAR(curqlevel);
  			while (lptr - GETVAR(curqlevel) < curqlevel->numvar)
  			{
@@ -18751,7 +18760,7 @@ index 3e88b81..589fe2d 100644
  				lptr++;
  			}
  		}
-@@ -490,11 +565,44 @@ lquery_in(PG_FUNCTION_ARGS)
+@@ -490,11 +547,44 @@ lquery_in(PG_FUNCTION_ARGS)
  			lptr = GETVAR(curqlevel);
  			while (lptr - GETVAR(curqlevel) < curqlevel->numvar)
  			{
@@ -18799,7 +18808,7 @@ index 3e88b81..589fe2d 100644
  				lptr++;
  				lrptr = LVAR_NEXT(lrptr);
  			}
-@@ -543,7 +651,9 @@ lquery_out(PG_FUNCTION_ARGS)
+@@ -543,7 +633,9 @@ lquery_out(PG_FUNCTION_ARGS)
  	{
  		if (i != 0)
  		{
@@ -18826,10 +18835,10 @@ index 4290ad4..6ad31dc 100644
  		}
  		memcpy(ptr, curlevel->name, curlevel->len);
 diff --git a/contrib/ltree/sql/ltree.sql b/contrib/ltree/sql/ltree.sql
-index 46cfa41..6cb577f 100644
+index 46cfa41..8af78d5 100644
 --- a/contrib/ltree/sql/ltree.sql
 +++ b/contrib/ltree/sql/ltree.sql
-@@ -2,284 +2,303 @@ CREATE EXTENSION ltree;
+@@ -2,284 +2,305 @@ CREATE EXTENSION ltree;
  
  SELECT ''::ltree;
  SELECT '1'::ltree;
@@ -18841,6 +18850,7 @@ index 46cfa41..6cb577f 100644
 +SELECT '1::2'::ltree;
 +SELECT '1::2::_3'::ltree;
 +SELECT '1::2::3 : 4'::ltree;
++SELECT 'foö::bär::ba@ : 4*'::ltree;
  
 -SELECT ltree2text('1.2.3.34.sdf');
 -SELECT text2ltree('1.2.3.34.sdf');
@@ -18988,6 +18998,7 @@ index 46cfa41..6cb577f 100644
 +SELECT '\*1::\|'::lquery;
 +SELECT '\!1::\|'::lquery;
 +SELECT '\*1::\{4'::lquery;
++SELECT 'foö::bär::ba\@ \: 4\*'::lquery;
  
 -SELECT nlevel('1.2.3.4');
 -SELECT '1.2'::ltree  < '2.2'::ltree;
