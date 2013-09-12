@@ -15,6 +15,43 @@
 
 PG_MODULE_MAGIC;
 
+int
+hacky_compare( const char * ptr ) {
+    const char * oe   = "ö";
+    const char * oec  = "Ö";
+    const char * ae   = "ä";
+    const char * aec  = "Ä";
+    const char * ue   = "ü";
+    const char * uec  = "Ü";
+    const char * essz = "ß";
+    if( hacky_mem_cmp( ptr, oe ) )
+            return 1;
+    if( hacky_mem_cmp( ptr, oec ) )
+            return 1;
+    if( hacky_mem_cmp( ptr, ae ) )
+            return 1;
+    if( hacky_mem_cmp( ptr, aec ) )
+            return 1;
+    if( hacky_mem_cmp( ptr, ue ) )
+            return 1;
+    if( hacky_mem_cmp( ptr, uec ) )
+            return 1;
+    if( hacky_mem_cmp( ptr, essz ) )
+            return 1;
+    return 0;
+}
+
+int
+hacky_mem_cmp( const char * ptr, const char * str ) {
+    if( memcmp( ptr, str, strlen(str) ) == 0 ) {
+        return 1;
+    }
+    if( memcmp( ptr, str + 1, strlen(str)-1 ) == 0 ) {
+        return 1;
+    }
+    return 0;
+}
+
 /* compare functions */
 PG_FUNCTION_INFO_V1(ltree_cmp);
 PG_FUNCTION_INFO_V1(ltree_lt);
