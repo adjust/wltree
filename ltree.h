@@ -5,6 +5,7 @@
 
 #include "fmgr.h"
 #include "tsearch/ts_locale.h"
+#include "access/htup_details.h"
 
 #define NODE_DELIMITER_CHAR ':'
 #define ESCAPE_CHAR '\\'
