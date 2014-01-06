@@ -1,6 +1,7 @@
 ## adevens ltree implementation
+[![Build Status](https://travis-ci.org/adeven/ltree.png?branch=master)](https://travis-ci.org/adeven/ltree)
 
-This is adevens patched version of Postgres 9.2.4 ltree module.
+This is adevens patched version of Postgres ltree module.
 
 Original written by Teodor Sigaev (teodor@sigaev.ru) and Oleg Bartunov (oleg@sai.msu.su)
 
