@@ -9,6 +9,9 @@
 #define NODE_DELIMITER_CHAR ':'
 #define ESCAPE_CHAR '\\'
 
+typedef int32 int4;
+typedef int16 int2;
+
 typedef struct
 {
 	uint16		len;
