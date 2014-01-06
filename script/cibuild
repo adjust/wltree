@@ -1,4 +1,6 @@
 #!/bin/bash
+sudo eselect postgresql set 9.2
+sudo make clean && sudo make && sudo make install && sudo make installcheck
 sudo /etc/init.d/postgresql-9.2 stop
 sudo /etc/init.d/postgresql-9.3 start
 sudo eselect postgresql set 9.3
