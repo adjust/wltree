@@ -10,3 +10,6 @@
 *.lai
 *.la
 *.a
+results
+regression.diffs
+regression.out
