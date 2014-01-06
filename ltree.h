@@ -5,9 +5,6 @@
 
 #include "fmgr.h"
 #include "tsearch/ts_locale.h"
-#if PG_VERSION_NUM > 90300
-#include "access/htup_details.h"
-#endif
 
 #define NODE_DELIMITER_CHAR ':'
 #define ESCAPE_CHAR '\\'
