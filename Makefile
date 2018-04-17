@@ -10,6 +10,6 @@ DATA = ltree--1.0.sql ltree--unpackaged--1.0.sql
 
 REGRESS = ltree
 
-PG_CONFIG = pg_config
+PG_CONFIG ?= pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
