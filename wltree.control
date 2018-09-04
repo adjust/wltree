@@ -1,0 +1,5 @@
+# wltree extension
+comment = 'data type for hierarchical tree-like structures with wide character support'
+default_version = '2.0'
+module_pathname = '$libdir/wltree'
+relocatable = true
