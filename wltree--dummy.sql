@@ -18,9 +18,12 @@
 DO
 $do$
 begin
-	raise notice 'checking if ltree is present';
 	if not exists(select 1 from pg_extension where extname = 'ltree') then
 		raise exception 'Extension ltree is not installed, there is no need for "dummy" wltree';
+	end if;
+
+	if (select nlevel(ltree'1.2') = 1) then
+		raise exception 'Installed ltree is the one from contrib module and conflicts with wltree';
 	end if;
 end
 $do$;
