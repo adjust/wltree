@@ -41,7 +41,10 @@ matrix:
 
 
 script:
-  - make | make installcheck || cat ./regression.out | echo /bin/false
+  - make | make installcheck 
+
+after_failure:
+  - cat ./regression.out 
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
