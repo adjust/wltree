@@ -22,9 +22,12 @@ matrix:
        addons:
             postgresql: 10
        install:
-            - sudo apt-get install postgresql-server-dev-10 postgresql-client-10
-            - sudo service postgresql start
-
+            - sudo /etc/init.d/postgresql stop
+            - sudo apt-get update
+            - sudo apt-get install postgresql-10 postgresql-client-10 postgresql-server-10
+            - sudo apt-get install postgresql-server-dev-10
+            - sudo pg_ctlcluster 10 main start
+            - sudo -iu postgres psql -c 'create user travis with superuser login;'
    fast_finish: true
 
 
