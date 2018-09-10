@@ -44,7 +44,7 @@ script:
   - make | make installcheck 
 
 after_failure:
-  - cat ./regression.out 
+  - cat ./results/wltree.out 
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
