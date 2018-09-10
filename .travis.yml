@@ -27,7 +27,7 @@ matrix:
             - sudo apt-get install postgresql-10 postgresql-client-10
             - sudo apt-get install postgresql-server-dev-10
             - sudo pg_ctlcluster 10 main restart
-            - sudo -iu postgres psql -c 'create user travis with superuser login;'
+            - sudo -iu postgres psql -h localhost -c 'create user travis with superuser login;'
    fast_finish: true
 
 
