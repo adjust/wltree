@@ -22,10 +22,8 @@ matrix:
        addons:
             postgresql: 10
        install:
-            - sudo apt-get install postgresql-server-dev-10 postgresql-10
-   allow_failures:
-     - env: postgres=9.2
-     - env: postgres=9.3
+            - sudo apt-get install postgresql-server-dev-10 postgresql-client-10
+            - sudo service postgresql start
 
    fast_finish: true
 
