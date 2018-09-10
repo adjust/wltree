@@ -41,10 +41,10 @@ matrix:
 
 
 script:
-  - make | make installcheck 
+  - make && sudo make install && make installcheck 
 
 after_failure:
-  - cat ./results/wltree.out 
+  - cat regression.diffs 
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
