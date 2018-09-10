@@ -1,4 +1,4 @@
-CREATE EXTENSION ltree;
+CREATE EXTENSION wltree;
 
 SELECT ''::ltree;
 SELECT '1'::ltree;

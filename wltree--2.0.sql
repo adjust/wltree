@@ -1,17 +1,31 @@
-/* contrib/ltree/ltree--1.0.sql */
+/* contrib/wltree/wltree--2.0.sql */
 
 -- complain if script is sourced in psql, rather than via CREATE EXTENSION
-\echo Use "CREATE EXTENSION ltree" to load this file. \quit
+\echo Use "CREATE EXTENSION wltree" to load this file. \quit
+
+/*
+ * Bail out if ltree is installed. Both extensions cant exist at the same time
+ * due to types having the same name. This might change in the future.
+ */  
+DO                                                                        
+$do$                                                                                            
+begin                                                                                           
+    if exists(select 1 from pg_extension where extname = 'ltree') then                      
+        raise exception 'Extension ltree is installed, there is installed already. wltree cannot be installed' ;
+    end if;
+end;                                  
+$do$;                                                 
+
 
 CREATE FUNCTION ltree_in(cstring)
 RETURNS ltree
 AS 'MODULE_PATHNAME'
-LANGUAGE C STRICT;
+LANGUAGE C STRICT IMMUTABLE;
 
 CREATE FUNCTION ltree_out(ltree)
 RETURNS cstring
 AS 'MODULE_PATHNAME'
-LANGUAGE C STRICT;
+LANGUAGE C STRICT IMMUTABLE;
 
 CREATE TYPE ltree (
 	INTERNALLENGTH = -1,
@@ -303,12 +317,12 @@ CREATE OPERATOR CLASS ltree_ops
 CREATE FUNCTION lquery_in(cstring)
 RETURNS lquery
 AS 'MODULE_PATHNAME'
-LANGUAGE C STRICT;
+LANGUAGE C STRICT IMMUTABLE;
 
 CREATE FUNCTION lquery_out(lquery)
 RETURNS cstring
 AS 'MODULE_PATHNAME'
-LANGUAGE C STRICT;
+LANGUAGE C STRICT IMMUTABLE;
 
 CREATE TYPE lquery (
 	INTERNALLENGTH = -1,
@@ -414,12 +428,12 @@ CREATE OPERATOR ^? (
 CREATE FUNCTION ltxtq_in(cstring)
 RETURNS ltxtquery
 AS 'MODULE_PATHNAME'
-LANGUAGE C STRICT;
+LANGUAGE C STRICT IMMUTABLE;
 
 CREATE FUNCTION ltxtq_out(ltxtquery)
 RETURNS cstring
 AS 'MODULE_PATHNAME'
-LANGUAGE C STRICT;
+LANGUAGE C STRICT IMMUTABLE;
 
 CREATE TYPE ltxtquery (
 	INTERNALLENGTH = -1,
@@ -481,12 +495,12 @@ CREATE OPERATOR ^@ (
 CREATE FUNCTION ltree_gist_in(cstring)
 RETURNS ltree_gist
 AS 'MODULE_PATHNAME'
-LANGUAGE C STRICT;
+LANGUAGE C STRICT IMMUTABLE;
 
 CREATE FUNCTION ltree_gist_out(ltree_gist)
 RETURNS cstring
 AS 'MODULE_PATHNAME'
-LANGUAGE C STRICT;
+LANGUAGE C STRICT IMMUTABLE;
 
 CREATE TYPE ltree_gist (
 	internallength = -1,
