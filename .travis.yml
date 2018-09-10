@@ -41,7 +41,7 @@ matrix:
 
 
 script:
-  - make | sudo make install | make check
+  - make | sudo make installcheck
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
