@@ -266,6 +266,7 @@ lquery_in(PG_FUNCTION_ARGS)
 		else
 		{
 			escaped_char = false;
+			state = LQPRS_WAITDELIM;
 		}
 
 		ptr += charlen;
@@ -299,7 +300,12 @@ lquery_in(PG_FUNCTION_ARGS)
 				GETVAR(curqlevel) = lptr = (nodeitem *) palloc0(sizeof(nodeitem) * (numOR + 1));
 				lptr->start = ptr;
 				lptr->escnum = 0;
-				state = LQPRS_WAITDELIM;
+
+				if (! escaped_char && charlen == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR))
+					state = LQPRS_WAITDELIMEND;
+				else
+					state = LQPRS_WAITDELIM;
+
 				curqlevel->numvar = 1;
 				escaped_char = (charlen == 1 && t_iseq(ptr, ESCAPE_CHAR)) && ! escaped_char;
 			}
@@ -379,6 +385,12 @@ lquery_in(PG_FUNCTION_ARGS)
 								 errdetail("Name length is %d, must "
 										   "be < 256, in position %d.",
 										   lptr->wlen, pos)));
+					if (lptr->wlen == 0)
+						ereport(ERROR,
+								(errcode(ERRCODE_NAME_TOO_LONG),
+								 errmsg("syntax error"),
+								 errdetail("Unexpected delimeter in position %d",
+										   pos)));
 				}
 
 				escaped_char = false;
@@ -386,7 +398,7 @@ lquery_in(PG_FUNCTION_ARGS)
 				curqlevel = NEXTLEV(curqlevel);
 			}
 			else
-				UNCHAR;
+				state = LTPRS_WAITDELIM;
 		}
 		else if (state == LQPRS_WAITOPEN)
 		{
