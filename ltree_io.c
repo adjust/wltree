@@ -95,9 +95,13 @@ ltree_in(PG_FUNCTION_ARGS)
 		{
 			lptr->start = ptr;
 			lptr->wlen = 0;
-			state = LTPRS_WAITDELIM;
+
+			/* handle corner case when label starts with a delimiter character */
+			state = (charlen == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR)) ?
+				LTPRS_WAITDELIMEND : LTPRS_WAITDELIM;
 		}
-		else if (state == LTPRS_WAITDELIMEND) {
+		else if (state == LTPRS_WAITDELIMEND)
+		{
 			if (charlen == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR))
 			{
 				lptr->len = ptr - lptr->start - 1;
@@ -109,6 +113,12 @@ ltree_in(PG_FUNCTION_ARGS)
 							 errdetail("Name length is %d, must "
 									   "be < 256, in position %d.",
 									   lptr->wlen, pos)));
+				if (lptr->wlen == 0)
+					ereport(ERROR,
+							(errcode(ERRCODE_SYNTAX_ERROR),
+							 errmsg("syntax error"),
+							 errdetail("Unexpected delimeter in position %d",
+									   pos)));
 
 				totallen += MAXALIGN(lptr->len + LEVEL_HDRSIZE);
 				lptr++;
@@ -301,10 +311,9 @@ lquery_in(PG_FUNCTION_ARGS)
 				lptr->start = ptr;
 				lptr->escnum = 0;
 
-				if (! escaped_char && charlen == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR))
-					state = LQPRS_WAITDELIMEND;
-				else
-					state = LQPRS_WAITDELIM;
+				/* handle corner case when label starts with a delimiter character */
+				state = (! escaped_char && charlen == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR)) ?
+					LQPRS_WAITDELIMEND : LQPRS_WAITDELIM;
 
 				curqlevel->numvar = 1;
 				escaped_char = (charlen == 1 && t_iseq(ptr, ESCAPE_CHAR)) && ! escaped_char;
@@ -369,7 +378,8 @@ lquery_in(PG_FUNCTION_ARGS)
 					UNCHAR;
 			}
 		}
-		else if (state == LQPRS_WAITDELIMEND) {
+		else if (state == LQPRS_WAITDELIMEND)
+		{
 			if (charlen == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR))
 			{
 				if (lptr != NULL)
@@ -387,7 +397,7 @@ lquery_in(PG_FUNCTION_ARGS)
 										   lptr->wlen, pos)));
 					if (lptr->wlen == 0)
 						ereport(ERROR,
-								(errcode(ERRCODE_NAME_TOO_LONG),
+								(errcode(ERRCODE_SYNTAX_ERROR),
 								 errmsg("syntax error"),
 								 errdetail("Unexpected delimeter in position %d",
 										   pos)));
