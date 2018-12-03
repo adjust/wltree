@@ -53,7 +53,7 @@ matrix:
           - POSTGRESQL=11
           - PGPORT=5433
 script:
-  - sudo make installl && make installcheck
+  - sudo make install && make installcheck
 
 after_failure:
   - cat regression.diffs
