@@ -22,7 +22,7 @@ begin
 		raise exception 'Extension ltree is not installed, there is no need for "dummy" wltree';
 	end if;
 
-	if (select nlevel(ltree'1.2') = 1) then
+	if (select nlevel(ltree'1.2') = 2) then
 		raise exception 'Installed ltree is the one from contrib module and conflicts with wltree';
 	end if;
 end
