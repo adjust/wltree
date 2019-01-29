@@ -16,14 +16,18 @@ Extension rename is a result of filename changes as well as .control file update
 ## Update procedure
 Update procedure should be performed as follows:
 1. Install dummy extension using the following SQL command:
+```SQL
 CREATE EXTENSION wltree VERSION "dummy";
+```
 This will:
 i. Check if ltree is isntalled and bail out if it isn't
 ii. If ltree exists, drop all objects from extension (this doesn't drop objects, only the dependencies)
 iii. Drop extension ltree;
 
 2. Once dummy is created successfully one should run update script:
+```SQL
 ALTER EXTENSION wltree UPDATE TO "2.0";
+```
 This will:
 i. Much like unpackaged update, this will create dependencies for objects released on previous step
 ii. Run CREATE OR REPLACE FUNCTION for all related functions redefining source file (so that it uses wltree.so instead of ltree.so)
