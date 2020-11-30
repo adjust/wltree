@@ -247,4 +247,13 @@ typedef unsigned char ABITVEC[ASIGLEN];
 
 /* type of key is the same to ltree_gist */
 
+#if PG_VERSION_NUM >= 130000
+#define histogram_selectivity_compat(vd,op,c,cv,vl,mh,sk,hs) histogram_selectivity(vd,op,c,cv,vl,mh,sk,hs)
+#define mcv_selectivity_compat(vd,op,c,cv,vl,sc) mcv_selectivity(vd,op,c,cv,vl,sc)
+#else
+/* no collation parameter */
+#define histogram_selectivity_compat(vd,op,c,cv,vl,mh,sk,hs) histogram_selectivity(vd,op,cv,vl,mh,sk,hs)
+#define mcv_selectivity_compat(vd,op,c,cv,vl,sc) mcv_selectivity(vd,op,cv,vl,sc)
+#endif
+
 #endif

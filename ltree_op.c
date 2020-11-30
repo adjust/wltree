@@ -574,6 +574,9 @@ ltreeparentsel(PG_FUNCTION_ARGS)
 	Node	   *other;
 	bool		varonleft;
 	double		selec;
+#if PG_VERSION_NUM >= 130000
+	Oid			collation = PG_GET_COLLATION();
+#endif
 
 	/*
 	 * If expression is not variable <@ something or something <@ variable,
@@ -609,8 +612,8 @@ ltreeparentsel(PG_FUNCTION_ARGS)
 		/*
 		 * Is the constant "<@" to any of the column's most common values?
 		 */
-		mcvsel = mcv_selectivity(&vardata, &contproc, constval, varonleft,
-								 &mcvsum);
+		mcvsel = mcv_selectivity_compat(&vardata, &contproc, collation, constval,
+                varonleft, &mcvsum);
 
 		/*
 		 * If the histogram is large enough, see what fraction of it the
@@ -618,7 +621,7 @@ ltreeparentsel(PG_FUNCTION_ARGS)
 		 * non-MCV population.	Otherwise use the default selectivity for the
 		 * non-MCV population.
 		 */
-		selec = histogram_selectivity(&vardata, &contproc,
+		selec = histogram_selectivity_compat(&vardata, &contproc, collation,
 									  constval, varonleft,
 									  10, 1, &hist_size);
 		if (selec < 0)
