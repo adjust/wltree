@@ -53,6 +53,16 @@ SELECT 'foö::bär::ba@ : 4*'::ltree;
  foö::bär::ba@ : 4*
 (1 row)
 
+SELECT '::1'::ltree;
+ERROR:  syntax error
+LINE 1: SELECT '::1'::ltree;
+               ^
+DETAIL:  Unexpected delimeter in position 1
+SELECT '::'::ltree;
+ERROR:  syntax error
+LINE 1: SELECT '::'::ltree;
+               ^
+DETAIL:  Unexpected delimeter in position 1
 SELECT ltree2text('1::2::3::34::sdf');
     ltree2text    
 ------------------
@@ -495,6 +505,22 @@ SELECT 'foö::bär::ba\@ \: 4\*'::lquery;
        lquery       
 --------------------
  foö::bär::ba@ : 4*
+(1 row)
+
+SELECT '::1'::lquery;
+ERROR:  syntax error
+LINE 1: SELECT '::1'::lquery;
+               ^
+DETAIL:  Unexpected delimeter in position 1
+SELECT '::'::lquery;
+ERROR:  syntax error
+LINE 1: SELECT '::'::lquery;
+               ^
+DETAIL:  Unexpected delimeter in position 1
+SELECT '1:2'::lquery;
+ lquery 
+--------
+ 1:2
 (1 row)
 
 SELECT nlevel('1::2::3::4');
