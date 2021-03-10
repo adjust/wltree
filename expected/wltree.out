@@ -507,6 +507,18 @@ SELECT 'foö::bär::ba\@ \: 4\*'::lquery;
  foö::bär::ba@ : 4*
 (1 row)
 
+SELECT 'a:::'::lquery;
+ lquery 
+--------
+ a:::
+(1 row)
+
+SELECT 'a:::b'::lquery;
+ lquery 
+--------
+ a:::b
+(1 row)
+
 SELECT '::1'::lquery; -- fails
 ERROR:  syntax error
 LINE 1: SELECT '::1'::lquery;

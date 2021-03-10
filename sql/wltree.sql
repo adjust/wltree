@@ -94,6 +94,8 @@ SELECT '\*1::\|'::lquery;
 SELECT '\!1::\|'::lquery;
 SELECT '\*1::\{4'::lquery;
 SELECT 'foö::bär::ba\@ \: 4\*'::lquery;
+SELECT 'a:::'::lquery;
+SELECT 'a:::b'::lquery;
 SELECT '::1'::lquery; -- fails
 SELECT '::'::lquery; -- fails
 SELECT '1:2'::lquery;

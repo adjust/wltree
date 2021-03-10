@@ -84,11 +84,11 @@ ltree_in(PG_FUNCTION_ARGS)
 
 		if (is_delimiter(ptr, charlen))
 		{
-			ptr += charlen;
+			ptr += charlen * 2;
 			num++;
 		}
-
-		ptr += charlen;
+		else
+			ptr += charlen;
 	}
 	num++;
 
@@ -266,11 +266,15 @@ lquery_in(PG_FUNCTION_ARGS)
 	while (*ptr)
 	{
 		charlen = pg_mblen(ptr);
+		delimiter = false;
 
 		if (charlen == 1)
 		{
 			if (!escaped_char && is_delimiter(ptr, charlen))
+			{
+				delimiter = true;
 				num++;
+			}
 			else if (! escaped_char && t_iseq(ptr, '|'))
 			{
 				escaped_char = false;
@@ -282,7 +286,10 @@ lquery_in(PG_FUNCTION_ARGS)
 		else
 			escaped_char = false;
 
-		ptr += charlen;
+		if (delimiter)
+			ptr += charlen * 2;
+		else
+			ptr += charlen;
 	}
 
 	num++;
