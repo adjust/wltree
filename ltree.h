@@ -7,6 +7,7 @@
 #include "tsearch/ts_locale.h"
 
 #define NODE_DELIMITER_CHAR ':'
+#define NODE_DELIMITER_LEN 2
 #define ESCAPE_CHAR '\\'
 
 typedef int32 int4;

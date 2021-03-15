@@ -40,7 +40,26 @@ typedef struct
 
 #define LTPRS_WAITNAME	0
 #define LTPRS_WAITDELIM 1
-#define LTPRS_WAITDELIMEND	2
+
+/*
+ * Check if the current character is delimiter. wltree's delimiter has multiple
+ * characters, we need to check all of them in advance.
+ *
+ * Returns true if sequential characters are equal to wltree's delimiter.
+ */
+static inline bool
+is_delimiter(char *start_ptr, int charlen)
+{
+	if (charlen == 1 && t_iseq(start_ptr, NODE_DELIMITER_CHAR))
+	{
+		char	   *ptr = start_ptr + charlen;
+
+		if (*ptr && pg_mblen(ptr) == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR))
+			return true;
+	}
+
+	return false;
+}
 
 Datum
 ltree_in(PG_FUNCTION_ARGS)
@@ -56,31 +75,20 @@ ltree_in(PG_FUNCTION_ARGS)
 	ltree_level *curlevel;
 	int			charlen;
 	int			pos = 0;
+	bool		delimiter = false;
 
 	ptr = buf;
 	while (*ptr)
 	{
 		charlen = pg_mblen(ptr);
 
-		if (charlen == 1)
+		if (is_delimiter(ptr, charlen))
 		{
-			if (t_iseq(ptr, NODE_DELIMITER_CHAR))
-			{
-				if (state == LTPRS_WAITDELIMEND)
-				{
-					num++;
-					state = LTPRS_WAITDELIM;
-				}
-				else
-					state = LTPRS_WAITDELIMEND;
-			}
-			else
-			{
-				state = LTPRS_WAITDELIM;
-			}
+			ptr += NODE_DELIMITER_LEN;
+			num++;
 		}
-
-		ptr += charlen;
+		else
+			ptr += charlen;
 	}
 	num++;
 
@@ -90,6 +98,7 @@ ltree_in(PG_FUNCTION_ARGS)
 	while (*ptr)
 	{
 		charlen = pg_mblen(ptr);
+		delimiter = is_delimiter(ptr, charlen);
 
 		if (state == LTPRS_WAITNAME)
 		{
@@ -97,15 +106,19 @@ ltree_in(PG_FUNCTION_ARGS)
 			lptr->wlen = 0;
 
 			/* handle corner case when label starts with a delimiter character */
-			state = (charlen == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR)) ?
-				LTPRS_WAITDELIMEND : LTPRS_WAITDELIM;
+			if (delimiter)
+				ereport(ERROR,
+							(errcode(ERRCODE_SYNTAX_ERROR),
+							 errmsg("syntax error"),
+							 errdetail("Unexpected delimeter in position %d",
+									   pos)));
+			state = LTPRS_WAITDELIM;
 		}
-		else if (state == LTPRS_WAITDELIMEND)
+		else if (state == LTPRS_WAITDELIM)
 		{
-			if (charlen == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR))
+			if (delimiter)
 			{
-				lptr->len = ptr - lptr->start - 1;
-				lptr->wlen--;
+				lptr->len = ptr - lptr->start;
 				if (lptr->wlen > 255)
 					ereport(ERROR,
 							(errcode(ERRCODE_NAME_TOO_LONG),
@@ -113,12 +126,6 @@ ltree_in(PG_FUNCTION_ARGS)
 							 errdetail("Name length is %d, must "
 									   "be < 256, in position %d.",
 									   lptr->wlen, pos)));
-				if (lptr->wlen == 0)
-					ereport(ERROR,
-							(errcode(ERRCODE_SYNTAX_ERROR),
-							 errmsg("syntax error"),
-							 errdetail("Unexpected delimeter in position %d",
-									   pos)));
 
 				totallen += MAXALIGN(lptr->len + LEVEL_HDRSIZE);
 				lptr++;
@@ -127,21 +134,28 @@ ltree_in(PG_FUNCTION_ARGS)
 			else
 				state = LTPRS_WAITDELIM;
 		}
-		else if (state == LTPRS_WAITDELIM)
-		{
-			if (charlen == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR))
-				state = LTPRS_WAITDELIMEND;
-		}
 		else
 			/* internal error */
 			elog(ERROR, "internal error in parser");
 
-		ptr += charlen;
-		lptr->wlen++;
-		pos++;
+		/*
+		 * wltree's delimiter is two characters, we need additional
+		 * increment here.
+		 */
+		if (delimiter)
+		{
+			ptr += NODE_DELIMITER_LEN;
+			pos += NODE_DELIMITER_LEN;
+		}
+		else
+		{
+			ptr += charlen;
+			pos++;
+			lptr->wlen++;
+		}
 	}
 
-	if (state == LTPRS_WAITDELIM || state == LTPRS_WAITDELIMEND)
+	if (state == LTPRS_WAITDELIM)
 	{
 		lptr->len = ptr - lptr->start;
 		if (lptr->wlen > 255)
@@ -218,7 +232,6 @@ ltree_out(PG_FUNCTION_ARGS)
 #define LQPRS_WAITCLOSE 6
 #define LQPRS_WAITEND	7
 #define LQPRS_WAITVAR	8
-#define LQPRS_WAITDELIMEND	9
 
 
 #define GETVAR(x) ( *((nodeitem**)LQL_FIRST(x)) )
@@ -243,6 +256,7 @@ lquery_in(PG_FUNCTION_ARGS)
 	bool		hasnot = false;
 	bool		wasbad = false;
 	bool		escaped_char = false;
+	bool		delimiter = false;
 	int			charlen;
 	int			pos = 0;
 
@@ -250,36 +264,27 @@ lquery_in(PG_FUNCTION_ARGS)
 	while (*ptr)
 	{
 		charlen = pg_mblen(ptr);
+		delimiter = is_delimiter(ptr, charlen);
 
 		if (charlen == 1)
 		{
-			if (! escaped_char && t_iseq(ptr, NODE_DELIMITER_CHAR))
-				if (state == LQPRS_WAITDELIMEND)
-				{
-					num++;
-					state = LQPRS_WAITDELIM;
-				}
-				else
-					state = LQPRS_WAITDELIMEND;
+			if (!escaped_char && delimiter)
+				num++;
 			else if (! escaped_char && t_iseq(ptr, '|'))
 			{
 				escaped_char = false;
-				state = LQPRS_WAITDELIM;
 				numOR++;
 			}
 			else
-			{
 				escaped_char = t_iseq(ptr, ESCAPE_CHAR) && ! escaped_char;
-				state = LQPRS_WAITDELIM;
-			}
 		}
 		else
-		{
 			escaped_char = false;
-			state = LQPRS_WAITDELIM;
-		}
 
-		ptr += charlen;
+		if (delimiter)
+			ptr += NODE_DELIMITER_LEN;
+		else
+			ptr += charlen;
 	}
 
 	num++;
@@ -291,6 +296,8 @@ lquery_in(PG_FUNCTION_ARGS)
 	while (*ptr)
 	{
 		charlen = pg_mblen(ptr);
+		delimiter = is_delimiter(ptr, charlen);
+
 		if (state == LQPRS_WAITLEVEL)
 		{
 			if (! escaped_char && charlen == 1 && t_iseq(ptr, '!'))
@@ -312,8 +319,13 @@ lquery_in(PG_FUNCTION_ARGS)
 				lptr->escnum = 0;
 
 				/* handle corner case when label starts with a delimiter character */
-				state = (! escaped_char && charlen == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR)) ?
-					LQPRS_WAITDELIMEND : LQPRS_WAITDELIM;
+				if (!escaped_char && delimiter)
+					ereport(ERROR,
+							(errcode(ERRCODE_SYNTAX_ERROR),
+							 errmsg("syntax error"),
+							 errdetail("Unexpected delimeter in position %d",
+									   pos)));
+				state = LQPRS_WAITDELIM;
 
 				curqlevel->numvar = 1;
 				escaped_char = (charlen == 1 && t_iseq(ptr, ESCAPE_CHAR)) && ! escaped_char;
@@ -365,11 +377,28 @@ lquery_in(PG_FUNCTION_ARGS)
 
 				state = LQPRS_WAITVAR;
 			}
-			else if (! escaped_char && charlen == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR))
+			else if (!escaped_char && delimiter)
 			{
 				if (lptr->start == ptr)
 					UNCHAR;
-				state = LQPRS_WAITDELIMEND;
+				if (lptr != NULL)
+				{
+					lptr->len = ptr - lptr->start -
+						((lptr->flag & LVAR_SUBLEXEME) ? 1 : 0) -
+						((lptr->flag & LVAR_INCASE) ? 1 : 0) -
+						((lptr->flag & LVAR_ANYEND) ? 1 : 0);
+					if (lptr->wlen > 255)
+						ereport(ERROR,
+								(errcode(ERRCODE_NAME_TOO_LONG),
+								 errmsg("name of level is too long"),
+								 errdetail("Name length is %d, must "
+										   "be < 256, in position %d.",
+										   lptr->wlen, pos)));
+				}
+
+				escaped_char = false;
+				state = LQPRS_WAITLEVEL;
+				curqlevel = NEXTLEV(curqlevel);
 			}
 			else
 			{
@@ -378,48 +407,16 @@ lquery_in(PG_FUNCTION_ARGS)
 					UNCHAR;
 			}
 		}
-		else if (state == LQPRS_WAITDELIMEND)
-		{
-			if (charlen == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR))
-			{
-				if (lptr != NULL)
-				{
-					lptr->len = ptr - lptr->start -
-						((lptr->flag & LVAR_SUBLEXEME) ? 1 : 0) -
-						((lptr->flag & LVAR_INCASE) ? 1 : 0) -
-						((lptr->flag & LVAR_ANYEND) ? 1 : 0) - 1;
-					if (lptr->wlen > 255)
-						ereport(ERROR,
-								(errcode(ERRCODE_NAME_TOO_LONG),
-								 errmsg("name of level is too long"),
-								 errdetail("Name length is %d, must "
-										   "be < 256, in position %d.",
-										   lptr->wlen, pos)));
-					if (lptr->wlen == 0)
-						ereport(ERROR,
-								(errcode(ERRCODE_SYNTAX_ERROR),
-								 errmsg("syntax error"),
-								 errdetail("Unexpected delimeter in position %d",
-										   pos)));
-				}
-
-				escaped_char = false;
-				state = LQPRS_WAITLEVEL;
-				curqlevel = NEXTLEV(curqlevel);
-			}
-			else
-				state = LTPRS_WAITDELIM;
-		}
 		else if (state == LQPRS_WAITOPEN)
 		{
 			if (charlen == 1 && t_iseq(ptr, '{'))
 				state = LQPRS_WAITFNUM;
-			else if (charlen == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR))
+			else if (delimiter)
 			{
-				lptr = NULL;
 				curqlevel->low = 0;
 				curqlevel->high = 0xffff;
-				state = LQPRS_WAITDELIMEND;
+				state = LQPRS_WAITLEVEL;
+				curqlevel = NEXTLEV(curqlevel);
 			}
 			else
 				UNCHAR;
@@ -472,10 +469,10 @@ lquery_in(PG_FUNCTION_ARGS)
 		}
 		else if (state == LQPRS_WAITEND)
 		{
-			if (charlen == 1 && t_iseq(ptr, NODE_DELIMITER_CHAR))
+			if (delimiter)
 			{
-				lptr = NULL;
-				state = LQPRS_WAITDELIMEND;
+				state = LQPRS_WAITLEVEL;
+				curqlevel = NEXTLEV(curqlevel);
 			}
 			else
 				UNCHAR;
@@ -484,15 +481,23 @@ lquery_in(PG_FUNCTION_ARGS)
 			/* internal error */
 			elog(ERROR, "internal error in parser");
 
-		ptr += charlen;
-		if (state == LQPRS_WAITDELIM)
-			lptr->wlen++;
+		if (delimiter)
+		{
+			ptr += NODE_DELIMITER_LEN;
+			pos += NODE_DELIMITER_LEN;
+		}
+		else
+		{
+			ptr += charlen;
+			if (state == LQPRS_WAITDELIM)
+				lptr->wlen++;
+			pos++;
+		}
 		if (escaped_char)
 			lptr->escnum++;
-		pos++;
 	}
 
-	if (state == LQPRS_WAITDELIM || state == LQPRS_WAITDELIMEND)
+	if (state == LQPRS_WAITDELIM)
 	{
 		if (lptr->start == ptr)
 			ereport(ERROR,

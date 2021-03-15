@@ -9,6 +9,8 @@ SELECT '1::2'::ltree;
 SELECT '1::2::_3'::ltree;
 SELECT '1::2::3 : 4'::ltree;
 SELECT 'foö::bär::ba@ : 4*'::ltree;
+SELECT '::1'::ltree; -- fails
+SELECT '::'::ltree; -- fails
 
 SELECT ltree2text('1::2::3::34::sdf');
 SELECT text2ltree('1::2::3::34::sdf');
@@ -92,6 +94,13 @@ SELECT '\*1::\|'::lquery;
 SELECT '\!1::\|'::lquery;
 SELECT '\*1::\{4'::lquery;
 SELECT 'foö::bär::ba\@ \: 4\*'::lquery;
+SELECT 'a:::'::lquery;
+SELECT 'a:::b'::lquery;
+SELECT '::1'::lquery; -- fails
+SELECT '::'::lquery; -- fails
+SELECT '1:2'::lquery;
+SELECT '*:1'::lquery; -- fails
+SELECT '*.1'::lquery; -- fails
 
 SELECT nlevel('1::2::3::4');
 SELECT '1::2'::ltree  < '2::2'::ltree;
