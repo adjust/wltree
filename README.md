@@ -1,3 +1,5 @@
+[![CI](https://github.com/adjust/wltree/actions/workflows/main.yml/badge.svg)](https://github.com/adjust/wltree/actions/workflows/main.yml)
+
 ## adevens ltree implementation
 [![Build Status](https://travis-ci.org/adeven/ltree.png?branch=master)](https://travis-ci.org/adeven/ltree)
 
