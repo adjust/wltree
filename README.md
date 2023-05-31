@@ -1,5 +1,6 @@
-## adevens ltree implementation
-[![Build Status](https://travis-ci.org/adeven/ltree.png?branch=master)](https://travis-ci.org/adeven/ltree)
+[![CI](https://github.com/adjust/wltree/actions/workflows/main.yml/badge.svg)](https://github.com/adjust/wltree/actions/workflows/main.yml)
+
+## adjust ltree implementation
 
 This is adevens patched version of Postgres ltree module.
 
