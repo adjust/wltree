@@ -20,7 +20,7 @@
    "prereqs": {
       "runtime": {
         "requires": {
-           "PostgreSQL": "9.3.0"
+           "PostgreSQL": "10.0"
         }
       }
    },
