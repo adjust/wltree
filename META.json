@@ -1,7 +1,8 @@
 {
    "name": "wltree",
+   "author": "adjustgmbh",
    "abstract": "This is adevens patched version of Postgres ltree module",
-   "version": "2.0",
+   "version": "0.2.0",
    "license": {
       "PostgreSQL": "http://www.postgresql.org/about/licence"
    },
@@ -13,7 +14,7 @@
       }
    },
    "meta-spec": {
-     "version": "2.0",
+     "version": "1.0.0",
      "url": "http://pgxn.org/meta/spec.txt"
    },
    "description": "This is adevens patched version of Postgres ltree module",
