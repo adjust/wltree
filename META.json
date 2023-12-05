@@ -1,0 +1,41 @@
+{
+   "name": "wltree",
+   "author": "adjustgmbh",
+   "abstract": "This is adevens patched version of Postgres ltree module",
+   "version": "2.0",
+   "maintainer" : [
+      "adjustgmbh"
+   ],
+   "license": {
+      "PostgreSQL": "http://www.postgresql.org/about/licence"
+   },
+   "provides": { 
+      "wltree": {
+         "file": "sql/pg_lock_pool.sql",
+         "version": "2.0",
+         "abstract": "This is adevens patched version of Postgres ltree module"
+      }
+   },
+   "meta-spec": {
+     "version": "1.0.0",
+     "url": "http://pgxn.org/meta/spec.txt"
+   },
+   "description": "This is adevens patched version of Postgres ltree module",
+   "prereqs": {
+      "runtime": {
+        "requires": {
+           "PostgreSQL": "10.0.0"
+        }
+      }
+   },
+   "resources": {
+       "bugtracker": {
+           "web": "http://github.com/adjust/wltree/issues"
+       },
+       "repository": {
+          "url": "git://github.com/adjust/wltree.git",
+          "web": "http://github.com/adjust/wltree",
+          "type": "git"
+       }
+   }
+}
