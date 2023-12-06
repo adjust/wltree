@@ -1,6 +1,5 @@
 {
    "name": "wltree",
-   "author": "adjustgmbh",
    "abstract": "This is adevens patched version of Postgres ltree module",
    "version": "2.0",
    "maintainer" : [
