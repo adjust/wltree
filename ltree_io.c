@@ -10,6 +10,10 @@
 #include "ltree.h"
 #include "crc32.h"
 
+#if PG_VERSION_NUM >= 160000
+#include "varatt.h"
+#endif
+
 PG_FUNCTION_INFO_V1(ltree_in);
 Datum		ltree_in(PG_FUNCTION_ARGS);
 
