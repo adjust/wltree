@@ -13,3 +13,6 @@
 results
 regression.diffs
 regression.out
+
+
+*.dylib
