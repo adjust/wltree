@@ -6,6 +6,10 @@
  * Teodor Sigaev <teodor@stack.net>
  */
 #include "postgres.h"
+#if PG_VERSION_NUM >= 160000
+#include "utils/array.h"
+#endif
+
 
 #include <ctype.h>
 

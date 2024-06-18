@@ -11,7 +11,7 @@
 #include "utils/formatting.h"
 #include "ltree.h"
 #if PG_VERSION_NUM >= 160000
-#include "varatt.h"
+#include "utils/array.h"
 #endif
 
 PG_FUNCTION_INFO_V1(ltq_regex);

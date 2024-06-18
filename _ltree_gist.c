@@ -11,6 +11,10 @@
 #include "access/skey.h"
 #include "crc32.h"
 #include "ltree.h"
+#if PG_VERSION_NUM >= 160000
+#include "varatt.h"
+#include "utils/array.h"
+#endif
 
 
 PG_FUNCTION_INFO_V1(_ltree_compress);
@@ -378,7 +382,7 @@ _ltree_picksplit(PG_FUNCTION_ARGS)
 		_j = GETENTRY(entryvec, j);
 		size_alpha = hemdist(datum_l, _j);
 		size_beta = hemdist(datum_r, _j);
-		costvector[j - 1].cost = Abs(size_alpha - size_beta);
+		costvector[j - 1].cost = abs(size_alpha - size_beta);
 	}
 	qsort((void *) costvector, maxoff, sizeof(SPLITCOST), comparecost);
 
@@ -556,7 +560,7 @@ Datum
 _ltree_consistent(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	char	   *query = (char *) DatumGetPointer(PG_DETOAST_DATUM(PG_GETARG_DATUM(1)));
+	char	   *query = (char *) DatumGetPointer(PG_GETARG_DATUM(1));
 	StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
 
 	/* Oid		subtype = PG_GETARG_OID(3); */
