@@ -74,8 +74,7 @@ ltree_compress(PG_FUNCTION_ARGS)
 	if (entry->leafkey)
 	{							/* ltree */
 		ltree_gist *key;
-		ltree	   *val = (ltree *) DatumGetPointer(PG_DETOAST_DATUM(entry->key));
-		// ltree	   *val = DatumGetLtreeP(entry->key);
+		ltree	   *val = DatumGetLtreeP(entry->key);
 		int4		len = LTG_HDRSIZE + VARSIZE(val);
 
 		key = (ltree_gist *) palloc(len);
