@@ -10,6 +10,11 @@
 #include "crc32.h"
 #include "ltree.h"
 
+#if PG_VERSION_NUM >= 160000
+#include "varatt.h"
+#include "utils/array.h"
+#endif
+
 #define NEXTVAL(x) ( (lquery*)( (char*)(x) + INTALIGN( VARSIZE(x) ) ) )
 
 PG_FUNCTION_INFO_V1(ltree_gist_in);
@@ -69,7 +74,7 @@ ltree_compress(PG_FUNCTION_ARGS)
 	if (entry->leafkey)
 	{							/* ltree */
 		ltree_gist *key;
-		ltree	   *val = (ltree *) DatumGetPointer(PG_DETOAST_DATUM(entry->key));
+		ltree	   *val = DatumGetLtreeP(entry->key);
 		int4		len = LTG_HDRSIZE + VARSIZE(val);
 
 		key = (ltree_gist *) palloc(len);
@@ -89,7 +94,7 @@ Datum
 ltree_decompress(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-	ltree_gist *key = (ltree_gist *) DatumGetPointer(PG_DETOAST_DATUM(entry->key));
+	ltree_gist *key = (ltree_gist *) PG_DETOAST_DATUM(entry->key);
 
 	if (PointerGetDatum(key) != entry->key)
 	{
@@ -707,7 +712,7 @@ ltree_consistent(PG_FUNCTION_ARGS)
 			break;
 		case 16:
 		case 17:
-			query = DatumGetPointer(PG_DETOAST_DATUM(PG_GETARG_DATUM(1)));
+			query = PG_GETARG_ARRAYTYPE_P(1);
 			if (GIST_LEAF(entry))
 				res = DatumGetBool(DirectFunctionCall2(lt_q_regex,
 											  PointerGetDatum(LTG_NODE(key)),

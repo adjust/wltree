@@ -9,6 +9,9 @@
 
 #include "crc32.h"
 #include "ltree.h"
+#if PG_VERSION_NUM >= 160000
+#include "varatt.h"
+#endif
 
 PG_FUNCTION_INFO_V1(ltxtq_in);
 Datum		ltxtq_in(PG_FUNCTION_ARGS);

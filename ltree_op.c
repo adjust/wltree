@@ -14,6 +14,9 @@
 #include "utils/lsyscache.h"
 #include "utils/selfuncs.h"
 #include "ltree.h"
+#if PG_VERSION_NUM >= 160000
+#include "varatt.h"
+#endif
 
 PG_MODULE_MAGIC;
 
